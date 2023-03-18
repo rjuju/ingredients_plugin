@@ -1,0 +1,7 @@
+base ingredient
+author Julien Rouhaud
+email rjuju123@gmail.com
+date 2023-03-20
+name Ingredient Plugin
+desc Ingredient list with dynamic ratio calculation
+url http://dokuwiki.org/plugin:ingredient

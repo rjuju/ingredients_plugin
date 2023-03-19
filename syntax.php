@@ -90,7 +90,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
                 case DOKU_LEXER_ENTER:
                     break;
                 case DOKU_LEXER_UNMATCHED :
-                    $recipe = $this->parse_ingredients($match);
+                    $recipe = $this->parse_ingredients($match, $renderer);
 
                     $rendered = $recipe->toHtml();
 
@@ -111,7 +111,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
      *                </ingredients>
      * @return array of (kind, array of (detail))
      */
-    protected function parse_ingredients($match)
+    private function parse_ingredients($match, Doku_Renderer $renderer)
     {
         $recipe = new IngredientRecipe();
         $pattern = "/(\s*\*)?\s*(\d+(?:\.\d+)?)\s*((?:g|gr|ml)\.?)?\s*(.*)\s*/";
@@ -150,19 +150,76 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             if (array_key_exists(0, $matches[4]))
                 $desc = $matches[4][0];
 
-            if ($unit === NULL)
-                $unit = '';
-
-            // normalize grams unit to g
-            if (substr($unit, 0, 1) == 'g')
-                $unit = 'g';
-
-            // normalize trailing .
-            if ($unit != '' && substr($unit, -1, 1) != '.')
-                $unit .= ".";
+            $unit = $this->normalize_unit($unit);
+            $desc = $this->render_desc($desc, $renderer);
 
             $recipe->addRawIngredient($level, $val, $unit, $desc);
         }
         return $recipe;
+    }
+
+    /**
+     * Normalize the given unit
+     * @param string: the raw unit as matched by the regexp
+     * @return string with the normalized unit
+     */
+    private function normalize_unit(string $unit): string
+    {
+        if ($unit === NULL)
+            $unit = '';
+
+        // normalize all grams unit to g
+        if (substr($unit, 0, 1) == 'g')
+            $unit = 'g';
+
+        // normalize trailing .
+        if ($unit != '' && substr($unit, -1, 1) != '.')
+            $unit .= ".";
+
+        return $unit;
+    }
+
+    /**
+     * Escape and apply doku syntax to the given raw description.  There's
+     * probably a better way to do that but I have no idea where to look and
+     * it's good enough for now
+     *
+     * @param string: the raw description
+     * @param Doku_Renderer: a dokuwiki renderer
+     * @return string: the escaped and properly formatted description
+     */
+    private function render_desc(string $desc, Doku_Renderer $renderer): string
+    {
+        // first make it safe
+        $desc = $renderer->_xmlEntities($desc);
+        // replace <del> that have just been escaped
+        $desc = preg_replace('/&lt;del&gt;(.*?)&lt;\/del&gt;/', '<del>\1</del>', $desc);
+        // replace bolds
+        $desc = preg_replace('/\*\*(.*?)\*\*/', '<strong>\1</strong>', $desc);
+        // replace ital
+        $desc = preg_replace('/\/\/(.*?)\/\//', '<em>\1</em>', $desc);
+        // replace underline
+        $desc = preg_replace('/__(.*?)__/', '<em class="u">\1</em>', $desc);
+        // replace monospaced, with ' possibly replaced by &#039;'
+        $desc = preg_replace("/(?:''|&#039;&#039;)(.*?)(?:''|&#039;&#039;)/", '<code>\1</code>', $desc);
+        // replace internal links
+        $desc = preg_replace_callback("/\[\[((?:\w+:)?\w+)(?:\|(\w+))?\]\]/",
+            function ($matches) use ($renderer)
+            {
+                $name = (count($matches) == 3) ? $matches[2] : null;
+                return $renderer->internallink($matches[1], $name,
+                    returnonly: true);
+            },
+            $desc);
+        // replace external links
+        $desc = preg_replace_callback("/\[\[((?:\w+:\/\/).+?)\|(\w+)\]\]/",
+            function ($matches) use ($renderer)
+            {
+                return $renderer->externallink($matches[1], $matches[2],
+                    returnonly: true);
+            },
+            $desc);
+
+        return $desc;
     }
 }

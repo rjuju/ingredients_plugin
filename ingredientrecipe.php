@@ -79,31 +79,32 @@ class IngredientRecipe
     {
         $out = '';
         $select = '';
-        $rand = rand();
+        $glob_rand = rand();
+        $rand;
         $first_variant = false;
 
         foreach($this->variants as $name => $variant)
         {
+            $rand = rand();
             if ($name != ING_NO_VARIANT)
             {
                 if ($select == '')
                 {
                     $first_variant = true;
-                    $id = "ing_select-$rand";
+                    $id = "ing_select-$glob_rand";
                     $select = "Variantes : <label for=\"$id\"></label>"
-                        . "<select name=\"$id\" id=\"$id\" data-rand=\"$rand\""
+                        . "<select name=\"$id\" id=\"$id\""
+                        . " data-globrand=\"$glob_rand\""
                         . ' onchange="ingselectListener(this)">' . "\n";
 
                     $select .= <<<JS
 <script language="javascript">
 function ingselectListener(obj){
     var wanted = obj.value;
-    var rand = obj.dataset.rand;
-    var divs = document.getElementsByClassName("ing_variant-" + rand);
+    var globrand = obj.dataset.globrand;
+    var divs = document.getElementsByClassName("ing_variant-" + globrand);
 
     for (var i = 0; i < divs.length; i++) {
-        var listDivId = divs[i].id.slice();
-
         if (divs[i].id == wanted)
             divs[i].style.display = "block";
         else
@@ -115,7 +116,7 @@ function ingselectListener(obj){
 JS;
                 }
 
-                $id = "variant_$name-$rand";
+                $id = "variant_$name-$glob_rand";
                 $id = preg_replace('/[\s]/','_', $id);
                 $id = preg_replace('/[^[A-Za-z0-9_]]/','', $id);
 
@@ -134,15 +135,15 @@ JS;
                 $style .= " border: 1px solid red;";
 
                 $out .= "<div"
-                    . " class=\"ing_variant-$rand\" id=\"$id\""
+                    . " class=\"ing_variant-$glob_rand\" id=\"$id\""
                     . " style=\"$style\"> <!-- variant $name -->\n";
                 $out .= "Variante <b>$name</b>\n";
             }
-            $out .= $variant->toHtml();
+            $out .= $variant->toHtml($rand);
 
             list($total_weight, $unit) = $variant->computeTotalWeight();
             $out .= "Pour un total de "
-                . Ingredient::add_input_box($total_weight)
+                . Ingredient::add_input_box($total_weight, $rand)
                 . " $unit<br/>\n";
 
             if ($name != ING_NO_VARIANT)
@@ -151,6 +152,29 @@ JS;
 
         if ($select != '')
             $select .= "</select><br/>\n";
+
+        $out .= <<<JS
+<script language="javascript">
+function inginputListener(obj){
+    var newval = obj.value;
+    var initval = obj.dataset.initval;
+    var rand = obj.dataset.rand;
+    var divs = document.getElementsByClassName("ing_input-" + rand);
+    var ratio;
+
+    ratio = newval * 1.0 / initval;
+
+    for (var i = 0; i < divs.length; i++) {
+        if (divs[i] === obj)
+            continue;
+
+        // round to 1 decimal without having a .0
+        divs[i].value = Math.round(divs[i].dataset.initval * ratio * 10) / 10;
+    }
+}
+</script>
+
+JS;
 
         return $select . $out;
     }

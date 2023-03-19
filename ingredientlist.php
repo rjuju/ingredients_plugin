@@ -93,7 +93,7 @@ class IngredientList
         return array($total_weight, $unit);
     }
 
-    public function toHtml(): string
+    public function toHtml(int $rand): string
     {
         $out = "<ul> <!-- IngredientList level $this->level -->\n";
 
@@ -105,7 +105,7 @@ class IngredientList
                 $class .= " node";
 
             $out .= "<li class=\"$class\">\n";
-            $out .= $ingredient->toHtml();
+            $out .= $ingredient->toHtml($rand);
             $out .= "</li>\n";
         }
         $out .= "</ul> <!-- IngredientList level $this->level -->\n";
@@ -137,12 +137,15 @@ class Ingredient
 
     public function hasNested(): bool { return $this->nested !== NULL; }
 
-    public static function add_input_box(float $value, int $size = 5)
+    public static function add_input_box(float $value, int $rand, int $size = 5)
     {
         $value = round($value, 1);
-        $str = "<input type=\"number\" maxlength=\"$size \""
+        $str = "<input type=\"number\" id=\"ing_input-$rand\""
+            . " maxlength=\"$size \""
             . ' style="width: ' . (12 * $size) . 'px"'
-            . " value=\"$value\"> ";
+            . " class=\"ing_input-$rand\" data-rand=\"$rand\""
+            . " value=\"$value\" data-initval=\"$value\""
+            . " onchange=\"inginputListener(this)\"> ";
 
         return $str;
     }
@@ -189,12 +192,12 @@ class Ingredient
         return array($this->amount, $this->unit);
     }
 
-    public function toHtml(): string
+    public function toHtml(int $rand): string
     {
         $content = '';
 
         if ($this->amount > 0)
-            $content .= Ingredient::add_input_box($this->amount);
+            $content .= Ingredient::add_input_box($this->amount, $rand);
 
         if ($this->unit != '')
             $content .= "$this->unit ";
@@ -202,7 +205,7 @@ class Ingredient
         $content .= $this->desc;
 
         if ($this->nested !== NULL)
-            $content .= $this->nested->toHtml();
+            $content .= $this->nested->toHtml($rand);
 
         return "<div class=\"li\">$content</div>\n";
     }

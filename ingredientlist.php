@@ -40,7 +40,7 @@ class IngredientList
     {
         $obj = new IngredientList($level);
 
-        $obj->addIngredient(new Ingredient(ING_NO_AMOUNT, '', '??'));
+        $obj->addIngredient($level, new Ingredient(ING_NO_AMOUNT, '', '??'));
 
         return $obj;
     }

@@ -92,28 +92,11 @@ class IngredientRecipe
                 {
                     $first_variant = true;
                     $id = "ing_select-$glob_rand";
-                    $select = "Variantes : <label for=\"$id\"></label>"
+                    $select = "<div class=\"ing_select\">";
+                    $select .= "Variantes : <label for=\"$id\"></label>"
                         . "<select name=\"$id\" id=\"$id\""
                         . " data-globrand=\"$glob_rand\""
                         . ' onchange="ingselectListener(this)">' . "\n";
-
-                    $select .= <<<JS
-<script language="javascript">
-function ingselectListener(obj){
-    var wanted = obj.value;
-    var globrand = obj.dataset.globrand;
-    var divs = document.getElementsByClassName("ing_variant-" + globrand);
-
-    for (var i = 0; i < divs.length; i++) {
-        if (divs[i].id == wanted)
-            divs[i].style.display = "block";
-        else
-            divs[i].style.display = "none";
-    }
-}
-</script>
-
-JS;
                 }
 
                 $id = "variant_$name-$glob_rand";
@@ -132,8 +115,6 @@ JS;
                 else
                     $style = "display: none;";
 
-                $style .= " border: 1px solid red;";
-
                 $out .= "<div"
                     . " class=\"ing_variant-$glob_rand\" id=\"$id\""
                     . " style=\"$style\"> <!-- variant $name -->\n";
@@ -151,30 +132,7 @@ JS;
         }
 
         if ($select != '')
-            $select .= "</select><br/>\n";
-
-        $out .= <<<JS
-<script language="javascript">
-function inginputListener(obj){
-    var newval = obj.value;
-    var initval = obj.dataset.initval;
-    var rand = obj.dataset.rand;
-    var divs = document.getElementsByClassName("ing_input-" + rand);
-    var ratio;
-
-    ratio = newval * 1.0 / initval;
-
-    for (var i = 0; i < divs.length; i++) {
-        if (divs[i] === obj)
-            continue;
-
-        // round to 1 decimal without having a .0
-        divs[i].value = Math.round(divs[i].dataset.initval * ratio * 10) / 10;
-    }
-}
-</script>
-
-JS;
+            $select .= "</select></div>\n";
 
         return $select . $out;
     }

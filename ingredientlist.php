@@ -14,7 +14,7 @@ class IngredientList
     private $list;
 
     // constructor
-    private function __construct(int $level)
+    private function __construct($level)
         //, float $amount, string $unit, string $desc)
     {
         // should not happen
@@ -28,7 +28,7 @@ class IngredientList
     }
 
     // public API
-    public static function fromIngredient(int $level, Ingredient $ingredient)
+    public static function fromIngredient($level, Ingredient $ingredient)
     {
         $obj = new IngredientList($level);
         $obj->addIngredient($level, $ingredient);
@@ -36,7 +36,7 @@ class IngredientList
         return $obj;
     }
 
-    public static function makeDummy(int $level)
+    public static function makeDummy($level)
     {
         $obj = new IngredientList($level);
 
@@ -45,7 +45,7 @@ class IngredientList
         return $obj;
     }
 
-    public function addIngredient(int $level, Ingredient $ingredient)
+    public function addIngredient($level, Ingredient $ingredient)
     {
         // if this is the same level, just add it to the array
         if ($level == $this->level)
@@ -93,7 +93,7 @@ class IngredientList
         return array($total_weight, $unit);
     }
 
-    public function toHtml(int $rand)
+    public function toHtml($rand)
     {
         $out = "<ul> <!-- IngredientList level $this->level -->\n";
 
@@ -123,7 +123,7 @@ class Ingredient
     private $nested = NULL;
 
     // constructor
-    function __construct(float $amount, string $unit, string $desc)
+    function __construct($amount, $unit, $desc)
     {
         $this->amount = $amount;
         $this->unit = $unit;
@@ -137,7 +137,7 @@ class Ingredient
 
     public function hasNested() { return $this->nested !== NULL; }
 
-    public static function add_input_box(float $value, int $rand, int $size)
+    public static function add_input_box($value, $rand, $size)
     {
         if ($size === NULL)
             $size = 5;
@@ -153,7 +153,7 @@ class Ingredient
         return $str;
     }
 
-    public function nest(int $cur_level, int $wanted_level,
+    public function nest($cur_level, $wanted_level,
         Ingredient $ingredient)
     {
         // Start a new nesting for the current IngredientList
@@ -195,7 +195,7 @@ class Ingredient
         return array($this->amount, $this->unit);
     }
 
-    public function toHtml(int $rand)
+    public function toHtml($rand)
     {
         $content = '';
 

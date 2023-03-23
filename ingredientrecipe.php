@@ -23,7 +23,7 @@ class IngredientRecipe
     }
 
     // private API
-    private function pushIngredient(int $level, Ingredient $ingredient)
+    private function pushIngredient($level, Ingredient $ingredient)
     {
         // create a default top-level variant if needed
         if (count($this->variants) == 0)
@@ -50,7 +50,7 @@ class IngredientRecipe
     }
 
     // public API
-    public function addVariant(string $name)
+    public function addVariant($name)
     {
         if (array_key_exists($name, $this->variants))
         {
@@ -62,8 +62,7 @@ class IngredientRecipe
         $this->variants[$name] = NULL;
     }
 
-    public function addRawIngredient(int $level, float $amount, string $unit,
-        string $desc)
+    public function addRawIngredient($level, $amount, $unit, $desc)
     {
         if ($level < 1)
         {

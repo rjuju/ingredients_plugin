@@ -10,7 +10,7 @@
 class IngredientList
 {
     // private attributes
-    private int $level;
+    private $level;
     private $list;
 
     // constructor
@@ -117,9 +117,9 @@ class IngredientList
 class Ingredient
 {
     // private attributes
-    private float $amount;
-    private string $unit;
-    private string $desc;
+    private $amount;
+    private $unit;
+    private $desc;
     private $nested = NULL;
 
     // constructor

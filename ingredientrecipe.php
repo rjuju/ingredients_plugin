@@ -14,7 +14,7 @@ class IngredientRecipe
     // private attributes
     private $variants = []; // array of IngredientList
     private $errors = [];   // array or string
-    private string $cur_variant = '';
+    private $cur_variant = '';
 
     // constructor
     function __construct()

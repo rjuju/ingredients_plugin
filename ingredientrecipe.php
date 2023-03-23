@@ -75,7 +75,7 @@ class IngredientRecipe
         $this->pushIngredient($level, $ingredient);
     }
 
-    public function toHtml(): string
+    public function toHtml()
     {
         $out = '';
         $select = '';

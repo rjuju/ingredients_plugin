@@ -163,7 +163,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
      * @param string: the raw unit as matched by the regexp
      * @return string with the normalized unit
      */
-    private function normalize_unit(string $unit): string
+    private function normalize_unit(string $unit)
     {
         if ($unit === NULL)
             $unit = '';
@@ -188,7 +188,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
      * @param Doku_Renderer: a dokuwiki renderer
      * @return string: the escaped and properly formatted description
      */
-    private function render_desc(string $desc, Doku_Renderer $renderer): string
+    private function render_desc(string $desc, Doku_Renderer $renderer)
     {
         // first make it safe
         $desc = $renderer->_xmlEntities($desc);

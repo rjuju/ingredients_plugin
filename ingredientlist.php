@@ -36,7 +36,7 @@ class IngredientList
         return $obj;
     }
 
-    public static function makeDummy(int $level): IngredientList
+    public static function makeDummy(int $level)
     {
         $obj = new IngredientList($level);
 
@@ -61,7 +61,7 @@ class IngredientList
         $this->list[$last]->nest($this->level, $level, $ingredient);
     }
 
-    public function computeTotalWeight(): array
+    public function computeTotalWeight()
     {
         $total_weight = 0;
         $unit = '';
@@ -93,7 +93,7 @@ class IngredientList
         return array($total_weight, $unit);
     }
 
-    public function toHtml(int $rand): string
+    public function toHtml(int $rand)
     {
         $out = "<ul> <!-- IngredientList level $this->level -->\n";
 
@@ -131,11 +131,11 @@ class Ingredient
     }
 
     // public API
-    public function getAmount(): float { return $this->amount; }
-    public function getUnit(): string { return $this->unit; }
-    public function getDesc(): string { return $this->desc; }
+    public function getAmount() { return $this->amount; }
+    public function getUnit() { return $this->unit; }
+    public function getDesc() { return $this->desc; }
 
-    public function hasNested(): bool { return $this->nested !== NULL; }
+    public function hasNested() { return $this->nested !== NULL; }
 
     public static function add_input_box(float $value, int $rand, int $size = 5)
     {
@@ -179,7 +179,7 @@ class Ingredient
         $this->nested->addIngredient($wanted_level, $ingredient);
     }
 
-    public function computeTotalWeight(): array
+    public function computeTotalWeight()
     {
         if ($this->nested !== NULL)
         {
@@ -192,7 +192,7 @@ class Ingredient
         return array($this->amount, $this->unit);
     }
 
-    public function toHtml(int $rand): string
+    public function toHtml(int $rand)
     {
         $content = '';
 

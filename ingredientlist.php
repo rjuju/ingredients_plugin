@@ -55,7 +55,8 @@ class IngredientList
         }
 
         // need to go in nested ingredient.  First find the latest ingredient,
-        $last = array_key_last($this->list);
+        end($this->list);
+        $last = key($this->list);
 
         // and nest it
         $this->list[$last]->nest($this->level, $level, $ingredient);

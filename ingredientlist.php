@@ -137,7 +137,7 @@ class Ingredient
 
     public function hasNested() { return $this->nested !== NULL; }
 
-    public static function add_input_box($value, $rand, $size)
+    public static function add_input_box($value, $rand, $size = NULL)
     {
         if ($size === NULL)
             $size = 5;

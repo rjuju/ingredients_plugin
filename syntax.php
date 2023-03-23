@@ -207,16 +207,14 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             function ($matches) use ($renderer)
             {
                 $name = (count($matches) == 3) ? $matches[2] : null;
-                return $renderer->internallink($matches[1], $name,
-                    returnonly: true);
+                return $renderer->internallink($matches[1], $name, null, true);
             },
             $desc);
         // replace external links
         $desc = preg_replace_callback("/\[\[((?:\w+:\/\/).+?)\|(\w+)\]\]/",
             function ($matches) use ($renderer)
             {
-                return $renderer->externallink($matches[1], $matches[2],
-                    returnonly: true);
+                return $renderer->externallink($matches[1], $matches[2], true);
             },
             $desc);
 

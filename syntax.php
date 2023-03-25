@@ -217,7 +217,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
         // replace monospaced, with ' possibly replaced by &#039;'
         $desc = preg_replace("/(?:''|&#039;&#039;)(.*?)(?:''|&#039;&#039;)/", '<code>\1</code>', $desc);
         // replace internal links
-        $desc = preg_replace_callback("/\[\[((?:\w+:)?\w+)(?:\|(\w+))?\]\]/",
+        $desc = preg_replace_callback("/\[\[((?:.+?:)?.+?)(?:\|(.+?))?\]\]/",
             function ($matches) use ($renderer)
             {
                 $name = (count($matches) == 3) ? $matches[2] : null;
@@ -225,7 +225,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             },
             $desc);
         // replace external links
-        $desc = preg_replace_callback("/\[\[((?:\w+:\/\/).+?)\|(\w+)\]\]/",
+        $desc = preg_replace_callback("/\[\[((?:\w+:\/\/).+?)\|(.+?)\]\]/",
             function ($matches) use ($renderer)
             {
                 return $renderer->externallink($matches[1], $matches[2], true);

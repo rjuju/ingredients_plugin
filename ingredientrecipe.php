@@ -50,6 +50,15 @@ class IngredientRecipe
         $this->variants[$this->cur_variant]->addIngredient($level, $ingredient);
     }
 
+    private function descToHtmlIdent($desc)
+    {
+        $id = $desc;
+        $id = preg_replace('/[\s]/','_', $id);
+        $id = preg_replace('/[^[A-Za-z0-9_]]/','', $id);
+
+        return $id;
+    }
+
     // public API
     public function addVariant($name)
     {
@@ -91,12 +100,21 @@ class IngredientRecipe
         $glob_rand = rand();
         $rand;
         $first_variant = false;
+        $class = '';
 
         foreach($this->errors as $error)
             $errors .= "<b>ERREUR</b>: $error<br/>\n";
 
         foreach($this->variants as $name => $variant)
         {
+            foreach($this->overall as list($amount, $desc))
+            {
+                if ($class != '')
+                    $class .= ' ';
+
+                $class .= ING_NAME_PREFIX . $this->descToHtmlIdent($desc);
+            }
+
             $rand = rand();
             if ($name != ING_NO_VARIANT)
             {
@@ -104,16 +122,15 @@ class IngredientRecipe
                 {
                     $first_variant = true;
                     $id = "ing_select-$glob_rand";
-                    $select = "<div class=\"ing_select\">";
+                    $select = "<div>";
                     $select .= "Variantes : <label for=\"$id\"></label>"
                         . "<select name=\"$id\" id=\"$id\""
+                        . " class=\"ing_select $class\""
                         . " data-globrand=\"$glob_rand\""
                         . ' onchange="ingselectListener(this)">' . "\n";
                 }
 
-                $id = "variant_$name-$glob_rand";
-                $id = preg_replace('/[\s]/','_', $id);
-                $id = preg_replace('/[^[A-Za-z0-9_]]/','', $id);
+                $id = "variant_" . $this->descToHtmlIdent($name). "-$glob_rand";
 
                 $select .= "<option value=\"$id\">$name</option>\n";
 
@@ -132,7 +149,7 @@ class IngredientRecipe
                     . " style=\"$style\"> <!-- variant $name -->\n";
                 $out .= "Variante <b>$name</b>\n";
             }
-            $out .= $variant->toHtml($rand);
+            $out .= $variant->toHtml($rand, $class);
 
             $out .= "Pour un total de ";
 
@@ -141,14 +158,21 @@ class IngredientRecipe
             {
                 foreach($this->overall as list($amount, $desc))
                 {
-                    $out .= Ingredient::add_input_box($amount, $rand);
+                    $o_class = $class;
+                    if ($o_class != '')
+                        $o_class .= " ";
+                    $o_class .= "ing_overall ";
+                    $o_class .= "ing_overall_" . $this->descToHtmlIdent($desc);
+
+                    $out .= Ingredient::add_input_box($amount, $rand, $o_class);
                     $out .= " $desc, ";
                 }
             }
 
             // handle automatic total weight
             list($total_weight, $unit) = $variant->computeTotalWeight();
-            $out .= Ingredient::add_input_box($total_weight, $rand)
+            $t_class = "ing_total $class";
+            $out .= Ingredient::add_input_box($total_weight, $rand, $t_class)
                 . " $unit<br/>\n";
 
             if ($name != ING_NO_VARIANT)

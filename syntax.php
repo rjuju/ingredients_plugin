@@ -13,6 +13,7 @@ if(!defined('DOKU_INC')) die();
 !(defined('ING_NO_VARIANT')) && define('ING_NO_VARIANT', '-');
 !(defined('ING_INVALID_UNIT')) && define('ING_INVALID_UNIT', '-');
 !(defined('ING_NO_AMOUNT')) && define('ING_NO_AMOUNT', -1);
+!(defined('ING_NAME_PREFIX')) && define('ING_NAME_PREFIX', 'ing_name_');
 
 require_once('ingredientrecipe.php');
 require_once('ingredientlist.php');

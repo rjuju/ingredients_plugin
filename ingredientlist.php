@@ -94,19 +94,19 @@ class IngredientList
         return array($total_weight, $unit);
     }
 
-    public function toHtml($rand)
+    public function toHtml($rand, $class)
     {
         $out = "<ul> <!-- IngredientList level $this->level -->\n";
 
         foreach($this->list as $ingredient)
         {
-            $class = "level$this->level";
+            $li_class = "level$this->level";
 
             if ($ingredient->hasNested())
-                $class .= " node";
+                $li_class .= " node";
 
-            $out .= "<li class=\"$class\">\n";
-            $out .= $ingredient->toHtml($rand);
+            $out .= "<li class=\"$li_class\">\n";
+            $out .= $ingredient->toHtml($rand, $class);
             $out .= "</li>\n";
         }
         $out .= "</ul> <!-- IngredientList level $this->level -->\n";
@@ -138,16 +138,19 @@ class Ingredient
 
     public function hasNested() { return $this->nested !== NULL; }
 
-    public static function add_input_box($value, $rand, $size = NULL)
+    public static function add_input_box($value, $rand, $class, $size = NULL)
     {
         if ($size === NULL)
             $size = 5;
+
+        if ($class === NULL)
+            $class = '';
 
         $value = round($value, 1);
         $str = "<input type=\"number\" id=\"ing_input-$rand\""
             . " maxlength=\"$size \""
             . ' style="width: ' . (12 * $size) . 'px"'
-            . " class=\"ing_input-$rand\" data-rand=\"$rand\""
+            . " class=\"ing_input ing_input-$rand $class\" data-rand=\"$rand\""
             . " value=\"$value\" data-initval=\"$value\""
             . " onchange=\"inginputListener(this)\"> ";
 
@@ -196,12 +199,12 @@ class Ingredient
         return array($this->amount, $this->unit);
     }
 
-    public function toHtml($rand)
+    public function toHtml($rand, $class)
     {
         $content = '';
 
         if ($this->amount > 0)
-            $content .= Ingredient::add_input_box($this->amount, $rand);
+            $content .= Ingredient::add_input_box($this->amount, $rand, NULL);
 
         if ($this->unit != '')
             $content .= "$this->unit ";
@@ -209,7 +212,7 @@ class Ingredient
         $content .= $this->desc;
 
         if ($this->nested !== NULL)
-            $content .= $this->nested->toHtml($rand);
+            $content .= $this->nested->toHtml($rand, $class);
 
         return "<div class=\"li\">$content</div>\n";
     }

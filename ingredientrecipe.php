@@ -76,11 +76,15 @@ class IngredientRecipe
 
     public function toHtml()
     {
+        $errors = '';
         $out = '';
         $select = '';
         $glob_rand = rand();
         $rand;
         $first_variant = false;
+
+        foreach($this->errors as $error)
+            $errors .= "<b>ERREUR</b>: $error<br/>\n";
 
         foreach($this->variants as $name => $variant)
         {
@@ -133,6 +137,6 @@ class IngredientRecipe
         if ($select != '')
             $select .= "</select></div>\n";
 
-        return $select . $out;
+        return $errors . $select . $out;
     }
 }

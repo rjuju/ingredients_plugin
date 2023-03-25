@@ -114,7 +114,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
     private function parse_ingredients($match, Doku_Renderer $renderer)
     {
         $recipe = new IngredientRecipe();
-        $pattern = "/(\s*\*)?\s*(\d+(?:\.\d+)?)\s*((?:g|gr|ml)\.?)?\s*(.*)\s*/";
+        $pattern;
 
         $list = explode("\n", $match);
         foreach($list as $value)
@@ -123,12 +123,25 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             if (trim($value) == '')
                 continue;
 
-            if (preg_match("/^\s*option (.*)\s*$/", $value, $matches) == 1)
+            // detect variant declaration
+            $pattern = "/^\s*option (.*)\s*$/";
+            if (preg_match($pattern, $value, $matches) == 1)
             {
                 $recipe->addVariant($matches[1]);
                 continue;
             }
 
+            // detect global ingredient list quantity
+            $pattern = "/^\s*pour\s+(\d+)\s*(.*?)\s*$/";
+            if (preg_match($pattern, $value, $matches) == 1)
+            {
+                $desc = $this->render_desc($matches[2], $renderer);
+                $recipe->setOverallQuantity($matches[1], $desc);
+                continue;
+            }
+
+            // not a special line, it has to be an ingredient
+            $pattern = "/(\s*\*)?\s*(\d+(?:\.\d+)?)\s*((?:g|gr|ml)\.?)?\s*(.*)\s*/";
             $det = preg_match_all($pattern, $value, $matches, PREG_PATTERN_ORDER);
 
             $level = 1;

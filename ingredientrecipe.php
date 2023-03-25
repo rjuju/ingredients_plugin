@@ -12,6 +12,7 @@ require_once('ingredientlist.php');
 class IngredientRecipe
 {
     // private attributes
+    private $overall = [];  // array of (amount, desc)
     private $variants = []; // array of IngredientList
     private $errors = [];   // array or string
     private $cur_variant = '';
@@ -60,6 +61,14 @@ class IngredientRecipe
 
         $this->cur_variant = $name;
         $this->variants[$name] = NULL;
+    }
+
+    public function setOverallQuantity($amount, $desc)
+    {
+        if (count($this->variants) != 0)
+            $this->errors[] = "Quantité globale \"$amount $desc\" déclarée"
+                . " après des variantes et/ou ingrédients";
+        $this->overall[] = [$amount, $desc];
     }
 
     public function addRawIngredient($level, $amount, $unit, $desc)
@@ -125,9 +134,21 @@ class IngredientRecipe
             }
             $out .= $variant->toHtml($rand);
 
+            $out .= "Pour un total de ";
+
+            // handle user-defined overall total amount (e.g. X cakes)
+            if (count($this->overall) > 0)
+            {
+                foreach($this->overall as list($amount, $desc))
+                {
+                    $out .= Ingredient::add_input_box($amount, $rand);
+                    $out .= " $desc, ";
+                }
+            }
+
+            // handle automatic total weight
             list($total_weight, $unit) = $variant->computeTotalWeight();
-            $out .= "Pour un total de "
-                . Ingredient::add_input_box($total_weight, $rand)
+            $out .= Ingredient::add_input_box($total_weight, $rand)
                 . " $unit<br/>\n";
 
             if ($name != ING_NO_VARIANT)

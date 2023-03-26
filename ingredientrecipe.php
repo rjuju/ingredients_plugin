@@ -107,6 +107,11 @@ class IngredientRecipe
         if (count($this->variants) != 0)
             $this->errors[] = "Quantité globale \"$amount $desc\" déclarée"
                 . " après des variantes et/ou ingrédients";
+
+        // normalize non-provided amount to NULL
+        if ($amount == '')
+            $amount = NULL;
+
         $this->overall[] = [$amount, $desc];
     }
 
@@ -228,8 +233,12 @@ class IngredientRecipe
                     $o_class .= "ing_overall ";
                     $o_class .= "ing_overall_" . $this->descToHtmlIdent($desc);
 
-                    $out .= Ingredient::add_input_box($amount, $rand, $o_class);
-                    $out .= " $desc, ";
+                    if ($amount !== NULL)
+                    {
+                        $out .= Ingredient::add_input_box($amount, $rand,
+                            $o_class);
+                        $out .= " $desc, ";
+                    }
                 }
             }
 
@@ -237,7 +246,14 @@ class IngredientRecipe
             list($total_weight, $unit) = $variant->computeTotalWeight();
             $t_class = "ing_total $class";
             $out .= Ingredient::add_input_box($total_weight, $rand, $t_class)
-                . " $unit<br/>\n";
+                . " $unit";
+
+            // if there's a single overall declaration without unit, use this
+            // name for the automatic total weight
+            if (count($this->overall) == 1 && $this->overall[0][0] === NULL)
+                $out .= " de " . $this->overall[0][1];
+
+            $out .= "<br/>\n";
 
             if ($name != ING_NO_VARIANT)
                 $out .= "</div> <!-- variant $name -->\n";

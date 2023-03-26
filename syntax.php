@@ -135,11 +135,13 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             }
 
             // detect global ingredient list quantity
-            $pattern = "/^\s*pour\s+(\d+)\s*(.*?)\s*$/";
+            $pattern = "/^\s*pour\s+(\d+?)?\s*(.*?)\s*$/";
             if (preg_match($pattern, $value, $matches) == 1)
             {
                 $desc = $this->render_desc($matches[2], $renderer);
-                $recipe->setOverallQuantity($matches[1], $desc);
+                $amount = $matches[1];
+
+                $recipe->setOverallQuantity($amount, $desc);
                 continue;
             }
 

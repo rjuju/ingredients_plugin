@@ -146,7 +146,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             // detect command
             if (strncmp($value, "cmd ", 4) == 0)
             {
-                $pattern = "/^cmd\s+\"(.+?)\"\s+(\d+)?\s+(.*?)\s*$/";
+                $pattern = "/^cmd\s+\"(.+?)\"\s+(\d+)?\s*(.*?)\s*$/";
                 if (preg_match($pattern, $value, $matches) == 1)
                 {
                     $id = $matches[1];

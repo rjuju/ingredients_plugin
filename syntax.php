@@ -163,7 +163,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             }
 
             // not a special line, it has to be an ingredient
-            $pattern = "/(\s*\*)?\s*(\d+(?:\.\d+)?)\s*((?:g|gr|ml)\.?)?\s*(.*)\s*/";
+            $pattern = "/^(\s*\*)?\s*(\d+(?:\.\d+)?)\s*((?:g|gr|ml)\.? )?\s*(.*)\s*$/";
             $det = preg_match_all($pattern, $value, $matches, PREG_PATTERN_ORDER);
 
             $level = 1;

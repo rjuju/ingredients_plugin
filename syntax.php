@@ -176,7 +176,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
             else
                 $desc = $value;
 
-            if (array_key_exists(0, $matches[2]))
+            if (array_key_exists(0, $matches[2]) && $matches[2][0] != '')
                 $val = floatval($matches[2][0]);
             else
                 $desc = substr($value, ($level * 2) + 1);

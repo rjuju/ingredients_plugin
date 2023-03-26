@@ -60,6 +60,11 @@ class IngredientRecipe
     }
 
     // public API
+    public function error($detail)
+    {
+        $this->errors[] = $detail;
+    }
+
     public function addVariant($name)
     {
         if (array_key_exists($name, $this->variants))

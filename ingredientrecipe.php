@@ -14,6 +14,7 @@ class IngredientRecipe
     // private attributes
     private $overall = [];  // array of (amount, desc)
     private $variants = []; // array of IngredientList
+    private $commands = []; // array of IngredientCommand
     private $errors = [];   // array or string
     private $cur_variant = '';
 
@@ -59,6 +60,30 @@ class IngredientRecipe
         return $id;
     }
 
+    private function generateJsCommand($id, $nth, $action, $payload)
+    {
+        $ret = NULL;
+
+        if ($action == ING_CMD_SET_VARIANT)
+        {
+            $val = $payload[0];
+
+            $ret = "ing_select('ing_name_$id', $nth, '$val');";
+        }
+        else if ($action == ING_CMD_SET_TOTAL)
+        {
+            $val = $payload[0];
+
+            $ret = "ing_set_total('ing_name_$id', $nth, '$val')\n";
+        }
+
+        if ($ret !== NULL)
+            return "$ret\n";
+
+        $this->errors[] = "Commande $action invalide";
+        return '';
+    }
+
     // public API
     public function error($detail)
     {
@@ -95,6 +120,40 @@ class IngredientRecipe
 
         $ingredient = new Ingredient($amount, $unit, $desc);
         $this->pushIngredient($level, $ingredient);
+    }
+
+    public function addCommand($id, $nth, $cmd)
+    {
+        $id = $this->descToHtmlIdent($id);
+
+        if ($nth === NULL || $nth == '')
+            $nth = 1;
+
+        $pattern = "/^\s*variante\s+(.*)\s*$/";
+        if (preg_match($pattern, $cmd, $matches) == 1)
+        {
+            $action = ING_CMD_SET_VARIANT;
+            $target = $matches[1];
+
+            $this->commands[] = array($id, $nth, $action, array($target));
+            return;
+        }
+
+        $pattern = "/^\s*total\s+(\d+?(?:\.\d+)?)\s*$/";
+        if (preg_match($pattern, $cmd, $matches) == 1)
+        {
+            $action = ING_CMD_SET_TOTAL;
+            $amount = $matches[1];
+
+            $this->commands[] = array($id, $nth, $action, array($amount));
+            return;
+        }
+
+        $error = "commande \"$cmd\" pour \"$id\"";
+        if ($nth !== NULL)
+            $error .= " (n° $nth)";
+        $error .= " invalide";
+        $this->errors[] = $error;
     }
 
     public function toHtml()
@@ -187,6 +246,25 @@ class IngredientRecipe
         if ($select != '')
             $select .= "</select></div>\n";
 
-        return $errors . $select . $out;
+        // if any command was created, call them on document ready
+        $cmds = '';
+        foreach($this->commands as $array)
+        {
+            list($id, $nth, $action, $payload) = $array;
+
+            $cmds .= $this->generateJsCommand($id, $nth, $action, $payload);
+        }
+
+        if ($cmds != '')
+        {
+            $cmds = "\n<script language=\"javascript\">\n"
+                . "document.addEventListener(\"DOMContentLoaded\", () => {\n"
+                . $cmds
+                . "\n});\n"
+                . "</script>\n";
+        }
+
+        // return everything
+        return $errors . $select . $out . $cmds;
     }
 }

@@ -14,6 +14,8 @@ if(!defined('DOKU_INC')) die();
 !(defined('ING_INVALID_UNIT')) && define('ING_INVALID_UNIT', '-');
 !(defined('ING_NO_AMOUNT')) && define('ING_NO_AMOUNT', -1);
 !(defined('ING_NAME_PREFIX')) && define('ING_NAME_PREFIX', 'ing_name_');
+!(defined('ING_CMD_SET_VARIANT')) && define('ING_CMD_SET_VARIANT', 'set_variant');
+!(defined('ING_CMD_SET_TOTAL')) && define('ING_CMD_SET_TOTAL', 'set_total');
 
 require_once('ingredientrecipe.php');
 require_once('ingredientlist.php');
@@ -139,6 +141,23 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
                 $desc = $this->render_desc($matches[2], $renderer);
                 $recipe->setOverallQuantity($matches[1], $desc);
                 continue;
+            }
+
+            // detect command
+            if (strncmp($value, "cmd ", 4) == 0)
+            {
+                $pattern = "/^cmd\s+\"(.+?)\"\s+(\d+)?\s+(.*?)\s*$/";
+                if (preg_match($pattern, $value, $matches) == 1)
+                {
+                    $id = $matches[1];
+                    $nth = $matches[2];
+                    $cmd = $renderer->_xmlEntities($matches[3]);
+
+                    $recipe->addCommand($id, $nth, $cmd);
+                    continue;
+                }
+                else
+                    $recipe->error("Command \"$value\" invalid");
             }
 
             // not a special line, it has to be an ingredient

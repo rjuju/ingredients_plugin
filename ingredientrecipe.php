@@ -161,6 +161,11 @@ class IngredientRecipe
         $this->errors[] = $error;
     }
 
+    /**
+     * Generate the html representation of the given ingredient.
+     *
+     * @return string
+     */
     public function toHtml()
     {
         $errors = '';

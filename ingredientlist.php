@@ -28,6 +28,16 @@ class IngredientList
     }
 
     // public API
+
+    /**
+     * Build a new IngredientList at the given level, storing the given
+     * ingredient.
+     *
+     * @param int $level: the wanted level.  Caller is responsible for passing
+     *                    a sane value
+     * @param Ingredient $ingredient: the ingredient to store
+     * @return IngredientList
+     */
     public static function fromIngredient($level, Ingredient $ingredient)
     {
         $obj = new IngredientList($level);
@@ -36,6 +46,18 @@ class IngredientList
         return $obj;
     }
 
+    /**
+     * Build a new "dummy" IngredientList
+     *
+     * A "dummy" ingredient list is used when the provided list is missing some
+     * level.  In this case, we need to create the missing level with no
+     * amount, no unit and a "??" placeholder description so the user can
+     * hopefully fix the ingredient list.
+     *
+     * @param int $level: the wanted level.  Caller is responsible for passing
+     *                    a sane value.
+     * @return IngredientList
+     */
     public static function makeDummy($level)
     {
         $obj = new IngredientList($level);
@@ -45,6 +67,19 @@ class IngredientList
         return $obj;
     }
 
+    /**
+     * Add the given Ingredient to the current list at the given level.
+     *
+     * This method will either append the Ingredient to the list of ingredients
+     * if the level is the same.  If not, it will fetch the last ingredient in
+     * the list (a list should always have at least one Ingredient, even if
+     * it's a dummy one) and try to nest the given IngredientList there.  It
+     * will then either append it to its list if it's the same level or keep
+     * nesting it.
+     *
+     * @param int *level: the wanted level
+     * @param Ingredient $ingredient: the Ingredient to add
+     */
     public function addIngredient($level, Ingredient $ingredient)
     {
         // if this is the same level, just add it to the array
@@ -62,6 +97,18 @@ class IngredientList
         $this->list[$last]->nest($this->level, $level, $ingredient);
     }
 
+    /**
+     * Compute an ingredient list total amount and unit.
+     *
+     * We simply sum up the amount for each ingredient in the list (which can
+     * themselves contains lists), and see if all contributing amounts (ie.
+     * stricly more than 0) are of the same unit.  If that's the case we return
+     * this unit so the caller can display a total amount in that unit,
+     * otherwise return the special ING_NO_AMOUNT unit so caller knows the list
+     * is made of different amount.
+     *
+     * @return array(float, string)
+     */
     public function computeTotalWeight()
     {
         $total_weight = 0;
@@ -94,6 +141,11 @@ class IngredientList
         return array($total_weight, $unit);
     }
 
+    /**
+     * Generate the html representation of the given ingredient.
+     *
+     * @return string
+     */
     public function toHtml($rand, $class)
     {
         $out = "<ul> <!-- IngredientList level $this->level -->\n";
@@ -157,6 +209,21 @@ class Ingredient
         return $str;
     }
 
+    /*
+     * Add the given Ingredient to the ingredient nest.
+     *
+     * If the Ingredient isn't nested (ie. doesn't contain a nested
+     * IngredientList), create one.
+     *
+     * If the wanted level is the next level, just append the next level,
+     * otherwise create a dummy nested level and ask this level to add the
+     * wanted ingredient, which will recurse and take care of finding the
+     * correct level.
+     *
+     * @param int $cur_level: the ingredient's owning list level
+     * @param int $wanted_level: the wanted level for the ingredient to nest
+     * @param Ingredient $ingredient: the ingredient to nest
+     */
     public function nest($cur_level, $wanted_level,
         Ingredient $ingredient)
     {
@@ -186,8 +253,29 @@ class Ingredient
         $this->nested->addIngredient($wanted_level, $ingredient);
     }
 
+    /**
+     * Compute a single ingredient total amount and unit.
+     *
+     * Note that an ingredient can be nested, thus composed of multiple
+     * sub-ingredient(s) that themselves can be nested too.
+     *
+     * We give a priority to the direct element weight / unit if present.  This
+     * is a bit faster, but more importantly it's also possible that a nested
+     * ingredient weight isn't the sum of its nests (e.g. if you add water and
+     * cook it).  In such case the upper level should know better the total
+     * weight.
+     *
+     * @return array(float, string)
+     */
     public function computeTotalWeight()
     {
+        // If the current ingredient has an amount, simply use it whether or
+        // not it contains a nested list of ingredients.
+        if ($this->amount > 0)
+            return array($this->amount, $this->unit);
+
+        // No direct amount, check if we can compute it from nested
+        // ingredient(s) if any.
         if ($this->nested !== NULL)
         {
             list($weight, $unit) = $this->nested->computeTotalWeight();
@@ -196,9 +284,16 @@ class Ingredient
                 return array($weight, $unit);
         }
 
+        // No luck, just return whatever was stored, caller knows what to do
+        // with a zero or ING_NO_AMOUNT amount.
         return array($this->amount, $this->unit);
     }
 
+    /**
+     * Generate the html representation of the given ingredient.
+     *
+     * @return string
+     */
     public function toHtml($rand, $class)
     {
         $content = '';

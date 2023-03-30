@@ -51,13 +51,13 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
      */
     public function connectTo($mode)
     {
-        $this->Lexer->addEntryPattern('<ingredients.*?>(?=.*?</ingredients>)',
+        $this->Lexer->addEntryPattern('<(?:ingredients|ingrédients).*?>(?=.*?</(?:ingredients|ingrédients)>)',
             $mode, 'plugin_ingredient');
     }
 
     public function postConnect()
     {
-        $this->Lexer->addExitPattern('</ingredients>', 'plugin_ingredient');
+        $this->Lexer->addExitPattern('</(?:ingredients|ingrédients)>', 'plugin_ingredient');
     }
 
     /**
@@ -127,7 +127,7 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
                 continue;
 
             // detect variant declaration
-            $pattern = "/^\s*option (.*)\s*$/";
+            $pattern = "/^\s*(?:option|variant|variante) (.*)\s*$/";
             if (preg_match($pattern, $value, $matches) == 1)
             {
                 $recipe->addVariant($matches[1]);

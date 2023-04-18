@@ -204,7 +204,7 @@ class Ingredient
             . ' style="width: ' . (12 * $size) . 'px"'
             . " class=\"ing_input ing_input-$rand $class\" data-rand=\"$rand\""
             . " value=\"$value\" data-initval=\"$value\""
-            . " onchange=\"inginputListener(this)\"> ";
+            . " onchange=\"inginputListener(this, false)\"> ";
 
         return $str;
     }

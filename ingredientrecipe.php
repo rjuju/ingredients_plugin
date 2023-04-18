@@ -278,8 +278,9 @@ class IngredientRecipe
 
         if ($cmds != '')
         {
+            // We use a custom event to ensure appropiate order of execution
             $cmds = "\n<script language=\"javascript\">\n"
-                . "document.addEventListener(\"DOMContentLoaded\", () => {\n"
+                . "document.addEventListener(\"ing_command\", () => {\n"
                 . $cmds
                 . "\n});\n"
                 . "</script>\n";

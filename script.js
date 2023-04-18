@@ -29,8 +29,12 @@ function ingselectListener(obj){
  * To cope with multiple ingredient lists (or event multiple variants), each is
  * generated with a per-variant random number that's postfixed to the classe
  * name.  We can that random number from the input's dataset.
+ *
+ * obj is the "ing_input" element that was changed.
+ * if reset_initval is true, we also modify all object data-initval to the
+ * computed new value.
  */
-function inginputListener(obj){
+function inginputListener(obj, reset_initval){
   var newval = obj.value;
   var initval = obj.dataset.initval;
   var rand = obj.dataset.rand;
@@ -40,13 +44,21 @@ function inginputListener(obj){
   ratio = newval * 1.0 / initval;
 
   for (var i = 0; i < divs.length; i++) {
+    // round to 1 decimal without having a .0
+    var setval = Math.round(divs[i].dataset.initval * ratio * 10) / 10;
+
+    // if reset_initval is true update data-initval, even for the source object
+    // itseld.
+    if (reset_initval)
+      divs[i].dataset.initval = setval;
+
     // don't process the source object itself, as it already has the wanted
-    // value
+    // value.
     if (divs[i] === obj)
       continue;
 
-    // round to 1 decimal without having a .0
-    divs[i].value = Math.round(divs[i].dataset.initval * ratio * 10) / 10;
+    // for any other object, simply update the value.
+    divs[i].value = setval;
   }
 }
 
@@ -103,7 +115,7 @@ function ing_set_total(cls, nth, val)
     {
       var input = totals[i];
       input.value = val;
-      input.dispatchEvent(new Event('change'));
+      input.dispatchEvent(new Event('ing_set_total'));
       return;
     }
   }
@@ -112,6 +124,15 @@ function ing_set_total(cls, nth, val)
     + cls + "\" found, but wanted #" + nth);
 }
 
-//jQuery(document).ready(function() {
-//  ing_commands();
-//});
+/**
+ * Entry point of custom code.  We first register new event listeneres, and
+ * then trigger custom commands by raising an ing_command event.
+ */
+jQuery(document).ready(function() {
+  jQuery(".ing_total").each(function() {
+    jQuery(this).on("ing_set_total", function() {
+      inginputListener(this, true);
+    });
+  });
+  document.dispatchEvent(new Event('ing_command'));
+});

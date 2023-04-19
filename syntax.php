@@ -159,7 +159,8 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
                     continue;
                 }
                 else
-                    $recipe->error("Command \"$value\" invalid");
+                    $recipe->error("Commande \"$value\" invalide<br/>"
+                        . "format attendu: cmd \"identifiant\" X ...");
             }
 
             // not a special line, it has to be an ingredient

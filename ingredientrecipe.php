@@ -154,10 +154,13 @@ class IngredientRecipe
             return;
         }
 
-        $error = "commande \"$cmd\" pour \"$id\"";
+        $error = "commande \"$cmd\" pour l'identifiant \"$id\"";
         if ($nth !== NULL)
             $error .= " (n° $nth)";
-        $error .= " invalide";
+        $error .= " invalide<br/>"
+            . "Commandes supportées:<br/>"
+            . '- cmd "identifiant" X variante nom_variante<br/>'
+            . '- cmd "identifiant" X total X.Y<br/>';
         $this->errors[] = $error;
     }
 

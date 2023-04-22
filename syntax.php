@@ -145,6 +145,29 @@ class syntax_plugin_ingredient extends DokuWiki_Syntax_Plugin
                 continue;
             }
 
+            // detect mold ratio
+            $pattern = "/^\s*moule\s+(.*?)\s*$/";
+            if (preg_match($pattern, $value, $matches) == 1)
+            {
+                $payload = $matches[1];
+                $pattern = "/^\s*(\d+)\s+(\w+)\s+([\d+\.x\*]+)\s*$/";
+                if (preg_match($pattern, $payload, $matches) != 1)
+                {
+                    $recipe->error("Ligne d'information sur le moule "
+                        . "incorrecte: moule $payload<br/>"
+                        . 'format attendu: moule NB_MOULE FORME BASExHAUTEUR<br/>'
+                        . 'ex: "moule 1 rond 15.3x5" ou "moule 2 rectangulaire 5x8x4"<br/>');
+                    continue;
+                }
+
+                $nb = $matches[1];
+                $type = $matches[2];
+                $dimensions = explode('x', $matches[3]);
+
+                $recipe->addMoldRatio($type, $nb, $dimensions);
+                continue;
+            }
+
             // detect command
             if (strncmp($value, "cmd ", 4) == 0)
             {

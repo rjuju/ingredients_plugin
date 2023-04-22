@@ -17,6 +17,24 @@ class IngredientRecipe
     private $commands = []; // array of IngredientCommand
     private $errors = [];   // array or string
     private $cur_variant = '';
+    private $mold_ratio = []; // array of (mold type, nb mold, dimensions)
+    private $mold_type_dim = [
+        'cercle' => [
+            'dim' => 2,
+        ],
+        'rond' => [
+            'alias' => 'cercle',
+        ],
+        'carre' => [
+            'dim' => 2,
+        ],
+        'rectangulaire' => [
+            'dim' => 3,
+        ],
+        'rectangle' => [
+            'alias' => 'rectangulaire',
+        ],
+    ];
 
     // constructor
     function __construct()
@@ -127,6 +145,31 @@ class IngredientRecipe
         $this->pushIngredient($level, $ingredient);
     }
 
+    public function addMoldRatio($type, $nb, $dimensions)
+    {
+        if (!array_key_exists($type, $this->mold_type_dim))
+        {
+            $this->error("Type de moule \"$type\" inconnu");
+            return;
+        }
+
+        if (array_key_exists('alias', $this->mold_type_dim[$type]))
+        {
+            $type = $this->mold_type_dim[$type]['alias'];
+        }
+
+        if (count($dimensions) != $this->mold_type_dim[$type]['dim'])
+        {
+            $wanted = $this->mold_type_dim[$type][$dim];
+            $this->error("il faut $wanted dimensions pour un moule de type "
+                . "$type, "
+                . count($dimensions) . "trouvée(s) (" . $matches[2]. ")");
+            return;
+        }
+
+        $this->mold_ratio[] = [$type, $nb, $dimensions];
+    }
+
     public function addCommand($id, $nth, $cmd)
     {
         $id = $this->descToHtmlIdent($id);
@@ -172,6 +215,7 @@ class IngredientRecipe
     public function toHtml()
     {
         $errors = '';
+        $mold_ratios = '';
         $out = '';
         $select = '';
         $glob_rand = rand();
@@ -181,6 +225,52 @@ class IngredientRecipe
 
         foreach($this->errors as $error)
             $errors .= "<b>ERREUR</b>: $error<br/>\n";
+
+        foreach($this->mold_ratio as $line)
+        {
+            list($type, $nb, $dimensions) = $line;
+            $rand = rand();
+            $volume = 0;
+
+            switch ($type)
+            {
+                case 'cercle':
+                    $volume = $dimensions[0] / 2 * 3.1415 * 3.1415;
+                    $volume *= $dimensions[1];
+                    break;
+                case 'carré':
+                    $volume = $dimensions[0] * $dimensions[°];
+                    $volume *= $dimensions[1];
+                    break;
+                case 'rectangulaire':
+                    $volume = $dimensions[0] * $dimensions[1];
+                    $volume *= $dimensions[2];
+                    break;
+            }
+
+            $volume *= $nb;
+
+            $mold_ratios .= "Recette prévue pour "
+                . "<b>$nb</b> "
+                . ($nb > 1 ? "moules" : "moule") . " de type "
+                . "<b>" . $type . "</b> - "
+                . implode('x', $dimensions)
+                . " cm\n";
+
+            $mold_ratios .= "<div style=\"display: none\" id=\"mold-$rand\">"
+                . "Mes moules:\n"
+                . "<ul id=\"mold-ul-$rand\" data-initvol=\"$volume\"></ul>"
+                . "</div>"
+                ;
+
+            $mold_ratios .= "<button onclick=\"add_mold('mold-$rand', 'mold-apply-$rand')\">"
+                . 'Ajouter un moule utilisé'
+                . '</button> '
+                . "<button style=\"display: none\" id=\"mold-apply-$rand\" "
+                . "onclick=\"apply_molds('mold-ul-$rand', 'ing_input-$rand')\">"
+                .  "Appliquer</button>"
+                ;
+        }
 
         foreach($this->variants as $name => $variant)
         {
@@ -290,6 +380,6 @@ class IngredientRecipe
         }
 
         // return everything
-        return $errors . $select . $out . $cmds;
+        return $errors . $mold_ratios . $select . $out . $cmds;
     }
 }

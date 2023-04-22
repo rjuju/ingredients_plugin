@@ -125,7 +125,200 @@ function ing_set_total(cls, nth, val)
 }
 
 /**
- * Entry point of custom code.  We first register new event listeneres, and
+ * Event listener when choosing a mold type
+ *
+ * Create the needed number of inputs for each dimension of the selected mold
+ * type.
+ *
+ * select is the html select element that triggered the event.
+ */
+function choose_mold_type(select)
+{
+  var mold_type = select.value;
+  var span = select.parentElement.getElementsByTagName('span')[0];
+  var nb_dim = 0;
+  var html = '';
+
+  switch (mold_type)
+  {
+    case 'cercle':
+      nb_dim = 2;
+      break;
+    case 'carré':
+      nb_dim = 2;
+      break;
+    case 'rectangulaire':
+      nb_dim = 3;
+      break;
+    default:
+      alert("Type de moule " + mold_types + "inconnu !");
+      break;
+  }
+
+  for (var i = 0; i < nb_dim; i++)
+  {
+    if (i != 0)
+    {
+      if (i < (nb_dim - 1))
+        html += " x ";
+      else
+        html += " (base) - ";
+    }
+
+    html += '<input type="number" maxlength="5" style="width: 60px;"></input>';
+  }
+
+  // last dimension is always height
+  html += ' (h)';
+  html += ' cm ';
+
+  span.innerHTML = html;
+}
+
+/**
+ * Add a new mold line in a custom mold list.
+ *
+ * Make visible all elements that are by default hidden in a mold list and add
+ * a new default li item to the ul list in the given mold list.
+ *
+ * id is the div id in which the ul list is contained.
+ */
+function add_mold(id, id_apply)
+{
+  var div = document.getElementById(id);
+  var apply = document.getElementById(id_apply);
+  var ul = div.getElementsByTagName('ul')[0];
+  var li = document.createElement("li");
+  var mold_types = ['cercle', 'carré', 'rectangulaire'];
+
+  var select = '<select onchange="choose_mold_type(this)">\n'
+    + '<option disabled selected value>Type de moule</option>';
+  for (const t of mold_types)
+    select += '<option value="' + t + '" maxlength="70">' + t + '</option>\n';
+
+  select += '</select>\n';
+
+  div.style.display = 'inline';
+  apply.style.display = 'inline';
+
+  li.innerHTML = select
+    + '<input type="number" class="mold-nb" maxlength="4" style="width: 48px;" value="1"></input>'
+    + ' moule(s) - '
+    + '<span></span>'
+    + '<button onclick="this.parentElement.remove()">X</button>\n';
+
+  ul.appendChild(li);
+}
+
+/**
+ * Update all ingredient list for the user's list of mold
+ *
+ * Compute the volume of all custom molds, and adapt all ingredient list with a
+ * ratio based on the original recipe's mold(s).
+ */
+function apply_molds(id, ori)
+{
+  var ul = document.getElementById(id);
+  var lis = ul.childNodes;
+  var initvol = ul.dataset.initvol;
+  var volume = 0;
+  var ratio;
+
+  if (lis.length == 0)
+  {
+    alert('Il faut ajouter un moule !');
+    return;
+  }
+
+  for (var i = 0; i < lis.length; i++)
+  {
+    var li = lis[i];
+    var mold_type = li.firstChild.value;
+    var nbel = li.getElementsByClassName('mold-nb')[0];
+    var inputs = li.getElementsByTagName('span')[0].getElementsByTagName('input');
+    var dims = [];
+    var nb;
+    var height;
+    var base;
+
+    if (li.firstChild.value == '')
+    {
+      alert('Il faut choisir un type de moule !');
+      return;
+    }
+
+    if (nbel.value == '')
+    {
+      alert('Il faut choisir un nombre de moule !');
+      return;
+    }
+
+    nb = parseFloat(nbel.value);
+
+    if (nb <= 0)
+    {
+      alert('Nombre de moule invalide !');
+      return;
+    }
+
+    for (var j = 0; j < inputs.length; j++)
+    {
+      var val;
+
+      if (inputs[j].value == '')
+      {
+        alert('Il faut indiquer une taille de moule !');
+        return;
+      }
+
+      val = parseFloat(inputs[j].value);
+
+      if (val <= 0)
+      {
+        alert('Taille de moule invalide !');
+        return;
+      }
+
+      dims.push(val);
+    }
+
+    height = dims.pop();
+
+    switch (mold_type)
+    {
+      case 'cercle':
+        base = dims[0] / 2 * 3.1415 * 3.1415;
+        break;
+      case 'carré':
+        base = dims[0] * dims[0];
+        break;
+      case 'rectangulaire':
+        base = dims[0] * dims[1];
+        break;
+      default:
+        alert("Type de moule " + mold_types + "inconnu !");
+        break;
+    }
+    volume += (nb * base * height);
+  }
+
+  ratio = volume * 1.0 / initvol;
+
+  // finaly, apply that ratio to every ingredient list
+  var ing_totals = document.getElementsByClassName('ing_total');
+  for (var i = 0; i < ing_totals.length; i++)
+  {
+    var ing_total = ing_totals[i];
+    var value = ing_total.dataset.initval;
+
+    // round to 1 decimal without having a .0
+    ing_total.value = Math.round(value * ratio * 10) / 10;
+    ing_total.dispatchEvent(new Event('change'));
+  }
+}
+
+/**
+ * Entry point of custom code.  We first register new event listeners, and
  * then trigger custom commands by raising an ing_command event.
  */
 jQuery(document).ready(function() {

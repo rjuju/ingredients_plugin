@@ -93,6 +93,18 @@ function ing_select(cls, nth, val)
   console.log(select);
 }
 
+/**
+ * Set the given value as the ingredient list total for the nth occurence of
+ * ingredient list with HTML class cls.
+ *
+ * Note that this will trigger the ing_set_total event, which also set the
+ * data-initvol property, so the given ingredient list will behave as if it was
+ * originally written for that total amount.
+ *
+ * Note also that all variants (if any) of the given ingredient list will be
+ * updated, so a user can still change the variant and keep a consistent
+ * amount.
+ */
 function ing_set_total(cls, nth, val)
 {
   var totals = document.getElementsByClassName("ing_total " + cls);
@@ -111,11 +123,22 @@ function ing_set_total(cls, nth, val)
       continue;
 
     cpt += 1;
+
+    // we found the wanted ingredient list.  Update all variants in case the
+    // default one is not the one the user want.
     if (cpt == nth)
     {
-      var input = totals[i];
-      input.value = val;
-      input.dispatchEvent(new Event('ing_set_total'));
+      var foundcls = totals[i].parentElement.className;
+      var divs = document.getElementsByClassName(foundcls);
+
+      for (var j = 0; j < divs.length; j++)
+      {
+        var div = divs[j];
+        var input = div.getElementsByClassName('ing_total')[0];
+
+        input.value = val;
+        input.dispatchEvent(new Event('ing_set_total'));
+      }
       return;
     }
   }

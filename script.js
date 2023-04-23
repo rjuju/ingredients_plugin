@@ -17,9 +17,9 @@ function ingselectListener(obj){
 
   for (var i = 0; i < divs.length; i++) {
     if (divs[i].id == wanted)
-      divs[i].style.display = "block";
+      divs[i].classList.remove('ing_hidden');
     else
-      divs[i].style.display = "none";
+      divs[i].classList.add('ing_hidden');
   }
 }
 
@@ -48,7 +48,7 @@ function inginputListener(obj, reset_initval){
     var setval = Math.round(divs[i].dataset.initval * ratio * 10) / 10;
 
     // if reset_initval is true update data-initval, even for the source object
-    // itseld.
+    // itself.
     if (reset_initval)
       divs[i].dataset.initval = setval;
 
@@ -119,7 +119,7 @@ function ing_set_total(cls, nth, val)
   var cpt = 0;
   for (var i = 0; i < totals.length; i++)
   {
-    if (totals[i].parentElement.style.display == "none")
+    if (totals[i].parentElement.classList.contains("ing_hidden"))
       continue;
 
     cpt += 1;
@@ -160,7 +160,7 @@ function choose_mold_type(select)
   var mold_type = select.value;
   var span = select.parentElement.getElementsByTagName('span')[0];
   var nb_dim = 0;
-  var html = '';
+  var html = document.createElement('span');
 
   switch (mold_type)
   {
@@ -183,19 +183,20 @@ function choose_mold_type(select)
     if (i != 0)
     {
       if (i < (nb_dim - 1))
-        html += " x ";
+        html.append(document.createTextNode(" x "));
       else
-        html += " (base) - ";
+        html.append(document.createTextNode(" (base) - "));
     }
 
-    html += '<input type="number" maxlength="5" style="width: 60px;"></input>';
+    var input = document.createElement('input');
+    input.classList.add('ing_input');
+    html.append(input);
   }
 
   // last dimension is always height
-  html += ' (h)';
-  html += ' cm ';
+  html.append(document.createTextNode(' (h) cm '));
 
-  span.innerHTML = html;
+  span.replaceWith(html);
 }
 
 /**
@@ -214,21 +215,39 @@ function add_mold(id, id_apply)
   var li = document.createElement("li");
   var mold_types = ['cercle', 'carré', 'rectangulaire'];
 
-  var select = '<select onchange="choose_mold_type(this)">\n'
-    + '<option disabled selected value>Type de moule</option>';
-  for (const t of mold_types)
-    select += '<option value="' + t + '" maxlength="70">' + t + '</option>\n';
-
-  select += '</select>\n';
-
-  div.style.display = 'inline';
+  // show the div containing the user's molds and the "apply" button
+  div.classList.remove('ing_hidden');
+  apply.classList.remove('ing_hidden');
+  div.style.display = 'block';
   apply.style.display = 'inline';
 
-  li.innerHTML = select
-    + '<input type="number" class="mold-nb" maxlength="4" style="width: 48px;" value="1"></input>'
-    + ' moule(s) - '
-    + '<span></span>'
-    + '<button onclick="this.parentElement.remove()">X</button>\n';
+  // create a select element to choose the type of mold
+  var select = document.createElement("select");
+  select.onchange = function() { choose_mold_type(this); };
+  select.options[0] = new Option('Type de moule', '');
+  select.options[0].enabled = false;
+  for (var i = 0; i < mold_types.length; i++)
+    select.options[i + 1] = new Option(mold_types[i], mold_types[i]);
+  li.appendChild(select);
+
+  // add a button for the number of mold for this type, by default 1
+  var nb = document.createElement("input");
+  nb.type = "number";
+  nb.classList.add("mold-nb");
+  nb.value = 1;
+  li.appendChild(nb);
+  li.appendChild(document.createTextNode(' moule(s) - '));
+
+  // add an empty span that will contain the mold dimensions when user chooses
+  // a mold type
+  li.appendChild(document.createElement("span"));
+
+  // finally add the remove button
+  var btn = document.createElement("input");
+  btn.type = "button";
+  btn.onclick = function() { this.parentElement.remove(); };
+  btn.value = "\u2613";
+  li.appendChild(btn);
 
   ul.appendChild(li);
 }

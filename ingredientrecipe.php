@@ -257,7 +257,7 @@ class IngredientRecipe
                 . implode('x', $dimensions)
                 . " cm\n";
 
-            $mold_ratios .= "<div style=\"display: none\" id=\"mold-$rand\">"
+            $mold_ratios .= "<div class=\"ing_hidden\" id=\"mold-$rand\">"
                 . "Mes moules:\n"
                 . "<ul id=\"mold-ul-$rand\" data-initvol=\"$volume\"></ul>"
                 . "</div>"
@@ -266,7 +266,7 @@ class IngredientRecipe
             $mold_ratios .= "<button onclick=\"add_mold('mold-$rand', 'mold-apply-$rand')\">"
                 . 'Ajouter un moule utilisé'
                 . '</button> '
-                . "<button style=\"display: none\" id=\"mold-apply-$rand\" "
+                . "<button class=\"ing_hidden\" id=\"mold-apply-$rand\" "
                 . "onclick=\"apply_molds('mold-ul-$rand', 'ing_input-$rand')\">"
                 .  "Appliquer</button>"
                 ;
@@ -304,17 +304,14 @@ class IngredientRecipe
                 $style = "";
 
                 if ($first_variant)
-                {
                     $first_variant = false;
-                    $style = "display: block;";
-                }
                 else
-                    $style = "display: none;";
+                    $style = "ing_hidden";
 
                 $out .= "<div"
-                    . " class=\"ing_variant-$glob_rand\" id=\"$id\""
-                    . " style=\"$style\"> <!-- variant $name -->\n";
-                $out .= "Variante <b>$name</b>\n";
+                    . " class=\"ing_variant-$glob_rand $style\" id=\"$id\""
+                    . "<!-- variant $name -->\n"
+                    . "Variante <b>$name</b>\n";
             }
             $out .= $variant->toHtml($rand, $class);
 

@@ -190,18 +190,13 @@ class Ingredient
 
     public function hasNested() { return $this->nested !== NULL; }
 
-    public static function add_input_box($value, $rand, $class, $size = NULL)
+    public static function add_input_box($value, $rand, $class)
     {
-        if ($size === NULL)
-            $size = 5;
-
         if ($class === NULL)
             $class = '';
 
         $value = round($value, 1);
         $str = "<input type=\"number\" id=\"ing_input-$rand\""
-            . " maxlength=\"$size \""
-            . ' style="width: ' . (12 * $size) . 'px"'
             . " class=\"ing_input ing_input-$rand $class\" data-rand=\"$rand\""
             . " value=\"$value\" data-initval=\"$value\""
             . " onchange=\"inginputListener(this, false)\"> ";

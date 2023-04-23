@@ -1,0 +1,11 @@
+input.ing_input {
+  width: 60px;
+}
+
+input.mold-nb {
+  width: 48px;
+}
+
+.ing_hidden {
+  display: none;
+}
